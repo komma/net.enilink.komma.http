@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: KOMMA HTML Plugin
+Bundle-SymbolicName: net.enilink.komma.http;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.eclipse.core.runtime,
+ net.enilink.komma.edit.ui,
+ javax.servlet
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: net.enilink.komma.http.KommaHttpPlugin
+Import-Package: org.osgi.service.http
+DynamicImport-Package: org.eclipse.equinox.http.*
