@@ -51,11 +51,10 @@ public class KommaHttpPlugin extends Plugin {
 				Dictionary<String, Object> settings = new Hashtable<String, Object>();
 				settings.put("http.port", 0);
 				jettyConfigurator.getMethod("startServer", String.class,
-						Dictionary.class).invoke(null, PLUGIN_ID);
+						Dictionary.class).invoke(null, PLUGIN_ID, settings);
 			} catch (Exception e) {
 				// Jetty is not available or could not be started,
 				// try to use Equinox HTTP service
-
 				Bundle httpBundle = Platform
 						.getBundle("org.eclipse.equinox.http");
 				if (httpBundle != null) {

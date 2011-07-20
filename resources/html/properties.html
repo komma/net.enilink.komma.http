@@ -54,6 +54,17 @@
 			updateItems();
 		}
 		
+		function getDescendants(parent) {
+			var dataLevel = parseInt(parent.attr("data-level"));
+			var items = $();
+			var next = parent.next();
+			while (parseInt(next.attr("data-level")) > dataLevel) {
+				items = items.add(next);
+				next = next.next();
+			}
+			return items;
+		}
+		
 		function createToggle(toggleResource) {
 			var toggle = $("<span>").addClass("toggle ui-icon ui-icon-circle-plus").css("margin-left", "-40px");
 			toggle.click(function() {
@@ -70,11 +81,12 @@
 				if (toggle.hasClass("ui-icon-circle-plus")) {
 					var firstCol;
 					if (toggleResource) {
-						var placeholder = item.clone().attr("about", s);
-						placeholder.find("td").empty();
-						firstCol = placeholder.find("td:first-child");
-						placeholder.insertAfter(item);
-						placeholder.addClass("remove");
+						var template = item.clone().attr("about", s);
+						template.find("td").empty();
+						firstCol = template.find("td:first-child");
+						template.insertAfter(item);
+						template.addClass("remove");
+						template.attr("data-level", parseInt(item.attr('data-level') + 1));
 					} else {
 						// <create root node>
 						var root = item.clone();
@@ -86,18 +98,19 @@
 						// force deletion of template node
 						item.data('value', {});
 						root.insertBefore(item);
+						item.attr("data-level", parseInt(item.attr('data-level') + 1));
 						// </create root node>
 					}
 					firstCol.css("padding-left", parseInt(firstCol.css("padding-left")) + 20);
 					
 					updateItems(s, p);
 				} else {
-					// TODO select all items with padding-left equal or greater than current padding					
-					var items = selectItems(s, p);
+					var items = getDescendants(item);
 					if (! toggleResource) {
 						// <remove root node>
 						var first = items.first();
 						first.find('td:first-child').replaceWith(toggle.closest('td'));
+						first.attr("data-level", parseInt(first.attr('data-level') - 1));
 						item.remove();
 						items = items.not(first);
 						// </remove root node>
@@ -215,39 +228,47 @@
 							}
 							
 							col.appendTo(item);
-							
-							// insert item at correct insertion point
-							// TODO correctly determine lastItems
-							var lastItems;
-							if (subject && predicate || !subject && !predicate) {
-								lastItems = selectItems(data.subject, data.predicate).last();
-							} else {
-								lastItems = selectItems(data.subject).last();
-							}
-							if (lastItems.length > 0) {
-								// this supports multiple insertion points at different levels
-								var nr = 0;
-								lastItems.each(function() {
-									if (nr > 0) {
-										item = item.clone(true);
-									}
-									// set correct padding for level
-									item.find("td:first-child")
-										.css("padding-left", $(this).find("td:first-child").css("padding-left"));
-									
-									item.insertAfter(this);
-									
-									if ($(this).hasClass('remove')) {
-										$(this).remove();
-									}
-								});
-							} else {
-								item.appendTo(table);
-							}
 						}
 					);
 					
+					// insert item at correct insertion point
+					// TODO correctly determine lastItems
+					var lastItems;
+					if (subject && predicate || !subject && !predicate) {
+						lastItems = selectItems(data.subject, data.predicate).last();
+					} else {
+						lastItems = selectItems(data.subject).last();
+					}
+					if (lastItems.length > 0) {
+						// this supports multiple insertion points at different levels
+						var nr = 0;
+						lastItems.each(function() {
+							if (nr > 0) {
+								row = row.clone(true);
+							}
+							// set correct padding for level
+							row.find("td:first-child")
+								.css("padding-left", $(this).find("td:first-child").css("padding-left"));
+							row.attr("data-level", $(this).attr("data-level"));
+							
+							row.insertAfter(this);
+							
+							if ($(this).hasClass('remove')) {
+								$(this).remove();
+							}
+						});
+					} else {
+						row.attr("data-level", 0);
+						row.appendTo(table);
+					}
+					
 					rows.exit().remove();
+					
+					rows.exit().each(function() {
+						var self = $(this);
+						getDescendants(self).remove();
+						self.remove();
+					});
 				});
 			}
 		}
