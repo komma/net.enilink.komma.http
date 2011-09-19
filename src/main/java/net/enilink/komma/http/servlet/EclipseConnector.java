@@ -174,16 +174,16 @@ public class EclipseConnector {
 	}
 
 	private boolean isProcessingRequired(String contentType) {
-		if (contentType.equals("application/xhtml+xml")) { //$NON-NLS-1$
+		if ("application/xhtml+xml".equals(contentType)) { //$NON-NLS-1$
 			return true;
 		}
-		if (!contentType.startsWith("text")) { //$NON-NLS-1$
+		if (contentType == null || !contentType.startsWith("text")) { //$NON-NLS-1$
 			return false;
 		}
-		if (contentType.equals("text/css")) { //$NON-NLS-1$
+		if ("text/css".equals(contentType)) { //$NON-NLS-1$
 			return false;
 		}
-		if (contentType.equals("text/javascript")) { //$NON-NLS-1$
+		if ("text/javascript".equals(contentType)) { //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -277,7 +277,7 @@ public class EclipseConnector {
 		String protocol = normalizedURL.getProtocol();
 		if (!("file".equals(protocol) //$NON-NLS-1$
 				|| "platform".equals(protocol) //$NON-NLS-1$
-				|| "jar".equals(protocol) || "bundleentry".equals(protocol))) { //$NON-NLS-1$
+				|| "jar".equals(protocol) || "bundleentry".equals(protocol) || "bundleresource".equals(protocol))) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			throw new IOException();
 		}
 

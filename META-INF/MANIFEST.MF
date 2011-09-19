@@ -5,9 +5,11 @@ Bundle-SymbolicName: net.enilink.komma.http;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
- net.enilink.komma.edit.ui,
- javax.servlet
+ net.enilink.komma.edit.ui
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: net.enilink.komma.http.KommaHttpPlugin
-Import-Package: org.osgi.service.http
+Import-Package: javax.servlet;version="2.5.0",
+ javax.servlet.http;version="2.5.0",
+ org.osgi.service.http
+Export-Package: net.enilink.komma.http
 DynamicImport-Package: org.eclipse.equinox.http.*
