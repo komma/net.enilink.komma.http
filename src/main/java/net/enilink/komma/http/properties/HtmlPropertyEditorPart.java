@@ -121,9 +121,8 @@ public class HtmlPropertyEditorPart extends AbstractEditingDomainPart {
 				+ "} ORDER BY ?property";
 
 		IExtendedIterator<IProperty> properties = resource.getEntityManager()
-				.createQuery(SELECT_PROPERTIES)
-				.setParameter("resource", resource)
-				.setIncludeInferred(includeInferred).evaluate(IProperty.class);
+				.createQuery(SELECT_PROPERTIES, includeInferred)
+				.setParameter("resource", resource).evaluate(IProperty.class);
 
 		json.key("data").array();
 		for (IProperty property : properties) {
