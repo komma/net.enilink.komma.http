@@ -19,8 +19,8 @@ import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
-import org.eclipse.swt.browser.ProgressAdapter;
 import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.json.JSONException;
@@ -101,13 +101,17 @@ public class HtmlPropertyEditorPart extends AbstractEditingDomainPart {
 				.getBundle().getEntry("resources/html/properties.html")
 				.toString());
 		browser.setUrl(url);
-		browser.addProgressListener(new ProgressAdapter() {
+		browser.addProgressListener(new ProgressListener() {
 			@Override
 			public void completed(ProgressEvent event) {
 				browserReady = true;
 				if (resource != null) {
 					refreshBrowser();
 				}
+			}
+
+			@Override
+			public void changed(ProgressEvent event) {
 			}
 		});
 	}

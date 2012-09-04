@@ -87,10 +87,7 @@ public class EclipseConnector {
 					notFoundCallout.notFound(url);
 				}
 
-				boolean isRTopicPath = isRTopicPath(req.getServletPath());
-
-				if (requiresErrorPage(lowerCaseuRL) && !isRTopicPath) {
-
+				if (requiresErrorPage(lowerCaseuRL)) {
 					// Try to load the error page if defined
 					String errorPage = Platform.getPreferencesService()
 							.getString(// HelpBasePlugin.PLUGIN_ID,
@@ -160,7 +157,7 @@ public class EclipseConnector {
 			is.close();
 
 		} catch (Exception e) {
-			String msg = "Error processing help request " + getURL(req); //$NON-NLS-1$
+			String msg = "Error processing resource request " + getURL(req); //$NON-NLS-1$
 			KommaHttpPlugin.logError(msg, e);
 		}
 	}
@@ -323,14 +320,5 @@ public class EclipseConnector {
 
 	public static void setNotFoundCallout(INotFoundCallout callout) {
 		notFoundCallout = callout;
-	}
-
-	public static boolean isRTopicPath(String servletPath) {
-		boolean isRTopicPath = false;
-
-		if (servletPath.equals("/rtopic")) //$NON-NLS-1$
-			isRTopicPath = true;
-
-		return isRTopicPath;
 	}
 }

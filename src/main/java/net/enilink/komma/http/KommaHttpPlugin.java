@@ -1,7 +1,6 @@
 package net.enilink.komma.http;
 
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.Hashtable;
 
 import javax.servlet.ServletException;
@@ -19,6 +18,7 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
+import net.enilink.commons.ui.CommonsUi;
 import net.enilink.komma.http.servlet.ContentServlet;
 
 public class KommaHttpPlugin extends Plugin {
@@ -46,36 +46,25 @@ public class KommaHttpPlugin extends Plugin {
 		if (httpServiceUrl == null) {
 			String port = System.getProperty(environmentKeyHttpPort);
 
-			try {
-				// try to start Jetty
-				Class<?> jettyConfigurator = getBundle().loadClass(
-						"org.eclipse.equinox.http.jetty.JettyConfigurator");
-
-				Dictionary<String, Object> settings = new Hashtable<String, Object>();
-				settings.put("http.port", port != null ? Integer.valueOf(port)
-						: 0);
-				jettyConfigurator.getMethod("startServer", String.class,
-						Dictionary.class).invoke(null, PLUGIN_ID, settings);
-			} catch (Exception e) {
-				// Jetty is not available or could not be started,
-				// try to use PAX Web or Equinox HTTP service
-				for (String bundleName : Arrays.asList(
-						"org.ops4j.pax.web.pax-web-jetty-bundle",
-						"org.ops4j.pax.web.pax-web-jetty",
-						"org.eclipse.equinox.http")) {
-					Bundle httpBundle = Platform.getBundle(bundleName);
-					if (httpBundle != null) {
-						// allow automatic selection of free port
-						if (port == null) {
-							System.setProperty(environmentKeyHttpPort, "0");
-						}
-						try {
-							httpBundle.start(Bundle.START_TRANSIENT);
-							return;
-						} catch (Exception e2) {
-							logError("Unable to start HTTP server bundle: "
-									+ bundleName, e2);
-						}
+			// Jetty is not available or could not be started,
+			// try to use PAX Web or Equinox HTTP service
+			for (String bundleName : Arrays.asList(
+					"org.eclipse.equinox.http.jetty",
+					"org.ops4j.pax.web.pax-web-jetty-bundle",
+					"org.ops4j.pax.web.pax-web-jetty",
+					"org.eclipse.equinox.http")) {
+				Bundle httpBundle = Platform.getBundle(bundleName);
+				if (httpBundle != null) {
+					// allow automatic selection of free port
+					if (port == null) {
+						System.setProperty(environmentKeyHttpPort, "0");
+					}
+					try {
+						httpBundle.start(Bundle.START_TRANSIENT);
+						return;
+					} catch (Exception e2) {
+						logError("Unable to start HTTP server bundle: "
+								+ bundleName, e2);
 					}
 				}
 			}
@@ -136,8 +125,16 @@ public class KommaHttpPlugin extends Plugin {
 				int port = portValue != null ? Integer.valueOf(portValue
 						.toString()) : 0;
 
-				httpServiceUrl = scheme + "://" + address + ":" + port;
-				System.out.println("HTTP Service: " + httpServiceUrl);
+				String serviceUrl = scheme + "://" + address + ":" + port;
+				System.out.println("HTTP Service: " + serviceUrl);
+
+				if (CommonsUi.IS_RAP_RUNNING) {
+					// simply use absolute paths for serving resources when
+					// running in a web context
+					httpServiceUrl = "";
+				} else {
+					httpServiceUrl = serviceUrl;
+				}
 
 				HttpService service = super.addingService(reference);
 				registerResources(service);
@@ -152,8 +149,8 @@ public class KommaHttpPlugin extends Plugin {
 	void registerResources(HttpService httpService) {
 		// register servlets and resources for HttpService
 		try {
-			httpService.registerServlet("/komma/content", new ContentServlet(),
-					new Hashtable<String, String>(),
+			httpService.registerServlet("/eclipse-resources",
+					new ContentServlet(), new Hashtable<String, String>(),
 					httpService.createDefaultHttpContext());
 		} catch (ServletException e) {
 			// TODO Auto-generated catch block
@@ -167,7 +164,7 @@ public class KommaHttpPlugin extends Plugin {
 	public static String createHttpUrl(String resourceUrl) {
 		String httpServiceUrl = getDefault().httpServiceUrl;
 		if (httpServiceUrl != null) {
-			return httpServiceUrl + "/komma/content/" + resourceUrl;
+			return httpServiceUrl + "/eclipse-resources/" + resourceUrl;
 		}
 		return resourceUrl;
 	}
