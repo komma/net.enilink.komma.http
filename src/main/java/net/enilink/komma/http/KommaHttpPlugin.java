@@ -18,7 +18,6 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
-import net.enilink.commons.ui.CommonsUi;
 import net.enilink.komma.http.servlet.ContentServlet;
 
 public class KommaHttpPlugin extends Plugin {
@@ -128,7 +127,18 @@ public class KommaHttpPlugin extends Plugin {
 				String serviceUrl = scheme + "://" + address + ":" + port;
 				System.out.println("HTTP Service: " + serviceUrl);
 
-				if (CommonsUi.IS_RAP_RUNNING) {
+				// TODO find a better way to determine if we are running in a
+				// server environment
+				boolean isRapRunning = false;
+				try {
+					Bundle rapBundle = Platform.getBundle("org.eclipse.rap.ui");
+					isRapRunning = rapBundle != null
+							&& (rapBundle.getState() & (Bundle.ACTIVE
+									| Bundle.STARTING | Bundle.RESOLVED)) != 0;
+				} catch (Throwable exception) {
+					// Assume that it's not available.
+				}
+				if (isRapRunning) {
 					// simply use absolute paths for serving resources when
 					// running in a web context
 					httpServiceUrl = "";
