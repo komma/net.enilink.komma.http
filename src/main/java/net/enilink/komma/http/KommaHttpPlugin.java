@@ -178,4 +178,8 @@ public class KommaHttpPlugin extends Plugin {
 		}
 		return resourceUrl;
 	}
+
+	public String getServiceUrl() {
+		return httpServiceUrl;
+	}
 }
