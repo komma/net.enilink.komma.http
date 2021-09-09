@@ -28,8 +28,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.core.runtime.Platform;
-
 import net.enilink.komma.http.KommaHttpPlugin;
 
 /**
@@ -89,10 +87,8 @@ public class EclipseConnector {
 
 				if (requiresErrorPage(lowerCaseuRL)) {
 					// Try to load the error page if defined
-					String errorPage = Platform.getPreferencesService()
-							.getString(// HelpBasePlugin.PLUGIN_ID,
-									"", "page_not_found", null, null); //$NON-NLS-1$
-
+					// TODO lookup error page
+					String errorPage = ""; //$NON-NLS-1$
 					if (errorPage != null && errorPage.length() > 0) {
 						con = createConnection(req, resp, "help:" + errorPage); //$NON-NLS-1$
 						resp.setContentType("text/html"); //$NON-NLS-1$
@@ -158,7 +154,7 @@ public class EclipseConnector {
 
 		} catch (Exception e) {
 			String msg = "Error processing resource request " + getURL(req); //$NON-NLS-1$
-			KommaHttpPlugin.logError(msg, e);
+			// KommaHttpPlugin.logError(msg, e);
 		}
 	}
 

@@ -1,15 +1,14 @@
 package net.enilink.komma.http;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
@@ -20,7 +19,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import net.enilink.komma.http.servlet.ContentServlet;
 
-public class KommaHttpPlugin extends Plugin {
+public class KommaHttpPlugin implements BundleActivator {
 
 	public static final String PLUGIN_ID = "net.enilink.komma.http"; //$NON-NLS-1$
 
@@ -41,7 +40,6 @@ public class KommaHttpPlugin extends Plugin {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		instance = this;
-		super.start(context);
 
 		registered = false;
 		defaultHttpServiceTracker = installDefaultHttpServiceTracker(context);
@@ -50,16 +48,17 @@ public class KommaHttpPlugin extends Plugin {
 		if (httpServiceUrl == null) {
 			String port = System.getProperty(environmentKeyHttpPort);
 
-			// Jetty is not available or could not be started,
-			// try to use PAX Web or Equinox HTTP service
-			for (String bundleName : Arrays.asList( //
+			Set<String> httpBundles = new HashSet<>(Arrays.asList( //
 					"org.eclipse.equinox.http.jetty", //$NON-NLS-1$
 					"org.ops4j.pax.web.pax-web-jetty-bundle", //$NON-NLS-1$
 					"org.ops4j.pax.web.pax-web-jetty", //$NON-NLS-1$
 					"org.eclipse.equinox.http" //$NON-NLS-1$
-			)) {
-				Bundle httpBundle = Platform.getBundle(bundleName);
-				if (httpBundle != null) {
+			));
+
+			// HTTP service is not available or could not be started,
+			// try to use PAX Web or Equinox HTTP service
+			for (Bundle httpBundle : context.getBundles()) {
+				if (httpBundles.contains(httpBundle.getSymbolicName())) {
 					// allow automatic selection of free port
 					if (port == null) {
 						System.setProperty(environmentKeyHttpPort, "0"); //$NON-NLS-1$
@@ -68,7 +67,7 @@ public class KommaHttpPlugin extends Plugin {
 						httpBundle.start(Bundle.START_TRANSIENT);
 						return;
 					} catch (Exception e2) {
-						logError("Unable to start HTTP server bundle: " + bundleName, e2);
+						throw new RuntimeException("Unable to start HTTP server bundle: " + httpBundle.getSymbolicName(), e2);
 					}
 				}
 			}
@@ -82,7 +81,6 @@ public class KommaHttpPlugin extends Plugin {
 			defaultHttpServiceTracker = null;
 		}
 		registered = false;
-		super.stop(context);
 		instance = null;
 	}
 
@@ -97,12 +95,12 @@ public class KommaHttpPlugin extends Plugin {
 	/**
 	 * Logs an Error message with an exception.
 	 */
-	public static synchronized void logError(String message, Throwable ex) {
-		if (message == null)
-			message = ""; //$NON-NLS-1$
-		Status errorStatus = new Status(IStatus.ERROR, PLUGIN_ID, IStatus.OK, message, ex);
-		KommaHttpPlugin.getDefault().getLog().log(errorStatus);
-	}
+//	public static synchronized void logError(String message, Throwable ex) {
+//		if (message == null)
+//			message = ""; //$NON-NLS-1$
+//		Status errorStatus = new Status(IStatus.ERROR, PLUGIN_ID, IStatus.OK, message, ex);
+//		KommaHttpPlugin.getDefault().getLog().log(errorStatus);
+//	}
 
 	ServiceTracker<HttpService, HttpService> installDefaultHttpServiceTracker(BundleContext context) throws Exception {
 		String filterString = "(" + Constants.OBJECTCLASS + "=" + HttpService.class.getName() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -131,7 +129,7 @@ public class KommaHttpPlugin extends Plugin {
 				// TODO find a better way to determine if we are running in a server environment
 				boolean isRapRunning = false;
 				try {
-					Bundle rapBundle = Platform.getBundle("org.eclipse.rap.ui"); //$NON-NLS-1$
+					Bundle rapBundle = Arrays.stream(context.getBundles()).filter(b -> "org.eclipse.rap.ui".equals(b.getSymbolicName())).findFirst().get(); //$NON-NLS-1$
 					isRapRunning = rapBundle != null && (rapBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0;
 				} catch (Throwable exception) {
 					// Assume that it's not available.
