@@ -1,1 +1,13 @@
 target/
+.flattened-pom.xml
+.settings/
+.classpath
+.project
+.idea/
+*.iml
+# exclude symlinks
+META-INF
+OSGI-INF
+# but include the directories
+!META-INF/
+!OSGI-INF/
