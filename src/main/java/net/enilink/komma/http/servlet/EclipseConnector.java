@@ -28,8 +28,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.enilink.komma.http.KommaHttpPlugin;
-
 /**
  * Performs transfer of data from eclipse to a jsp/servlet
  */

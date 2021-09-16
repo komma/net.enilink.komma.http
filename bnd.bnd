@@ -3,4 +3,5 @@ Bundle-Activator: net.enilink.komma.http.KommaHttpPlugin
 -exportcontents: net.enilink.*
 -removeheaders: Bundle-Developers
 -noextraheaders: true
+-noimportjava: true
 Import-Package: org.osgi.framework.*;version="[1.8,2)", *
